@@ -21,3 +21,7 @@ databaseChangeLog:
       file: db/changelog/changeset/10.03.2026_create_users.sql
   - include:
       file: db/changelog/changeset/14.03.2026_add_columns_to_publishers.sql
+  - include:
+      file: db/changelog/changeset/16.03.2026_create_user_roles.sql
+  - include:
+      file: db/changelog/changeset/17.03.2026_init-users.sql

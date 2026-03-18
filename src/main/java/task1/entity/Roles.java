@@ -1,6 +1,6 @@
 package task1.entity;
 
-public enum Role {
+public enum Roles {
     USER,
     ADMIN
 }
