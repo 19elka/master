@@ -8,7 +8,7 @@ docker run -d --name book-app \
   --restart unless-stopped \
   -p 8080:8080 \
   -e SPRING_PROFILES_ACTIVE=docker \
-  -e SPRING_LIQUIBASE_ENABLED=false \
+  -e SPRING_LIQUIBASE_ENABLED=true \
   book-service:1.0
 
 echo "Ready!"
