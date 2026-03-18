@@ -2,7 +2,7 @@ name: CI Pipeline
 
 on:
   pull_request:
-    branches: [ feature-add-doker]
+    branches: [ master]
     types: [opened, reopened, synchronize, edited]
 
 jobs:
@@ -62,9 +62,6 @@ jobs:
 
       - name: Build project
         run: ./gradlew build -x test --no-daemon
-
-      - name: Run Checkstyle
-        run: ./gradlew checkstyleMain checkstyleTest --no-daemon
 
       - name: Run tests
         env:

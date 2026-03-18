@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import task1.entity.User;
+import task1.exception.InvalidTokenException;
 import task1.repository.UserRepository;
 
 import java.io.IOException;
@@ -33,8 +34,8 @@ public class JwtAuthenticationFilter implements Filter {
                          ServletResponse response,
                          FilterChain filterChain) throws ServletException, IOException {
 
-        HttpServletRequest req = (HttpServletRequest) request; //
-        HttpServletResponse res = (HttpServletResponse) response; //
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
 
         String authHeader = req.getHeader(HttpHeaders.AUTHORIZATION);
 
@@ -48,8 +49,8 @@ public class JwtAuthenticationFilter implements Filter {
                 if (username != null) {
                     User user = userRepository.findByUsername(username).orElse(null);
                     if (user != null) {
-                        List<SimpleGrantedAuthority> authorities = Arrays.stream(user.getRoles().name().split(","))
-                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.trim()))
+                        List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
+                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                                 .collect(Collectors.toList());
 
                         UsernamePasswordAuthenticationToken authToken =
@@ -60,9 +61,7 @@ public class JwtAuthenticationFilter implements Filter {
                 }
             } catch (IllegalArgumentException e) {  // контроллер эдвайс
                 log.error("Token validation failed: {}", e.getMessage());
-                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                res.getWriter().write("{\"error\": \"Invalid token\"}");
-                return;
+                throw new InvalidTokenException("Invalid token: " + e.getMessage());
             }
         }
 
