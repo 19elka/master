@@ -38,6 +38,16 @@ spec:
                 secretKeyRef:
                   name: jwt-secret
                   key: secret
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "host.minikube.internal:29092"
+            - name: SPRING_KAFKA_CONSUMER_GROUP_ID
+              value: "book-service-users"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://host.docker.internal:5432/booksdb"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "postgres"
           resources:
             requests:
               memory: "512Mi"

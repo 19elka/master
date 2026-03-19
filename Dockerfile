@@ -1,6 +1,8 @@
 FROM gradle:8.10-jdk17-alpine AS builder
 WORKDIR /app
-COPY build.gradle.kts gradlew* ./
+COPY build.gradle.kts ./
+COPY gradlew ./
+COPY gradlew.bat ./
 COPY gradle gradle
 COPY settings.gradle ./
 RUN ./gradlew dependencies --no-daemon
