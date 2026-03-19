@@ -13,12 +13,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import task1.entity.User;
-import task1.exception.InvalidTokenException;
 import task1.repository.UserRepository;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +27,7 @@ public class JwtAuthenticationFilter implements Filter {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
     @Override
     public void doFilter(ServletRequest request,
@@ -61,7 +61,8 @@ public class JwtAuthenticationFilter implements Filter {
                 }
             } catch (IllegalArgumentException e) {  // контроллер эдвайс
                 log.error("Token validation failed: {}", e.getMessage());
-                throw new InvalidTokenException("Invalid token: " + e.getMessage());
+                handlerExceptionResolver.resolveException(req, res, null, e);
+                return;
             }
         }
 

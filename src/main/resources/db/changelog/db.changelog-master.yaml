@@ -25,3 +25,5 @@ databaseChangeLog:
       file: db/changelog/changeset/16.03.2026_create_user_roles.sql
   - include:
       file: db/changelog/changeset/17.03.2026_init-users.sql
+  - include:
+      file: db/changelog/changeset/19.03.2026_drop_roles_from_users.sql

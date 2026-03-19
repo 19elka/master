@@ -25,11 +25,10 @@ dependencies {
     implementation("redis.clients:jedis:4.3.2")
     runtimeOnly("org.postgresql:postgresql")
 
-    // 🔴 ВОТ СЮДА добавь H2:
-    runtimeOnly("com.h2database:h2")
-
     implementation("org.springframework.boot:spring-boot-starter-actuator:3.3.0")
     implementation("net.datafaker:datafaker:2.1.0")
+
+    implementation("org.springframework.kafka:spring-kafka")
 
     compileOnly("org.projectlombok:lombok:1.18.26")
     annotationProcessor("org.projectlombok:lombok:1.18.26")
