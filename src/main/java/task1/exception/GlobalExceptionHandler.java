@@ -14,13 +14,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse handleInvalidTokenException(InvalidTokenException ex) {
         log.error("Invalid token: {}", ex.getMessage());
-        return new ErrorResponse("invalid_token", ex.getMessage());
+        return new ErrorResponse("UNAUTHORIZED", ex.getMessage());
     }
 
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler(ServerErrorException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleGenericException(Exception ex) {
+    public ErrorResponse handleGenericException(ServerErrorException ex) {
         log.error("Unexpected error: {}", ex.getMessage());
-        return new ErrorResponse("internal_error", "Server error. Please try again later.");
+        return new ErrorResponse("SERVER_ERROR", "Server error. Please try again later.");
     }
 }

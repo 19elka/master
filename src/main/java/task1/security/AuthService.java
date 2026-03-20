@@ -9,12 +9,10 @@ import task1.dto.LoginRequest;
 import task1.dto.LoginResponse;
 import task1.dto.UserCreateDto;
 import task1.dto.UserResponseDto;
-import task1.entity.Roles;
 import task1.entity.User;
 import task1.repository.UserRepository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,14 +34,12 @@ public class AuthService {
                 .username(dto.username())
                 .password(passwordEncoder.encode(dto.password()))
                 .name(dto.name())
-                .roles(List.of(Roles.USER)) //энам
+                .roles(List.of("USER"))
                 .build();
 
         userRepository.save(user);
 
-        String roles = user.getRoles().stream()
-                .map(Roles::name)
-                .collect(Collectors.joining(","));
+        String roles = String.join(",", user.getRoles());
 
         return new UserResponseDto(
                 user.getId(),
@@ -64,9 +60,7 @@ public class AuthService {
 
         String token = jwtService.generateToken(user.getUsername());
 
-        String roles = user.getRoles().stream()
-                .map(Roles::name)
-                .collect(Collectors.joining(","));
+        String roles = String.join(",", user.getRoles());
 
         return new LoginResponse(token, "Bearer", user.getUsername(), roles);
     }

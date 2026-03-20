@@ -42,27 +42,21 @@ public class JwtAuthenticationFilter implements Filter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            try {
-                String username = jwtService.validateTokenAndGetUsername(token);
-                log.info("Validated JWT token and extracted username {}", username);
+            String username = jwtService.validateTokenAndGetUsername(token);
+            log.info("Validated JWT token and extracted username {}", username);
 
-                if (username != null) {
-                    User user = userRepository.findByUsername(username).orElse(null);
-                    if (user != null) {
-                        List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
-                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                                .collect(Collectors.toList());
+            if (username != null) {
+                User user = userRepository.findByUsername(username).orElse(null);
+                if (user != null) {
+                    List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
+                            .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                            .collect(Collectors.toList());
 
-                        UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(username, null, authorities);
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                        log.info("Authentication for URI {} successful for user {}", ((HttpServletRequest) request).getRequestURI(), username);
-                    }
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.info("Authentication for URI {} successful for user {}", ((HttpServletRequest) request).getRequestURI(), username);
                 }
-            } catch (IllegalArgumentException e) {  // контроллер эдвайс
-                log.error("Token validation failed: {}", e.getMessage());
-                handlerExceptionResolver.resolveException(req, res, null, e);
-                return;
             }
         }
 
