@@ -1,0 +1,59 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: ${DB_USER:user}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  data:
+    redis:
+      port: 6379
+      host: localhost
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    properties:
+      security:
+        protocol: PLAINTEXT
+    consumer:
+      group-id: book-service-users
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:mySuperSecretKeyForJwtTokensThatIsVeryLongAndSecure1234567890!}
+    expiration: 3600000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  swagger-ui:
+    persist-authorization: true
+    display-request-duration: true
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
+  show-actuator: true
