@@ -44,7 +44,7 @@ app:
     expiration: 3600000
   kafka:
     topics:
-      weather-topic: weather-updates
+      weather-topic: weather
     producer:
       timeout-seconds: 3
 

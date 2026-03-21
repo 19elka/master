@@ -1,4 +1,4 @@
-package task1.listener;
+package task1.kafka;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

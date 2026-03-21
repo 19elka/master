@@ -15,7 +15,7 @@ public class WeatherProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String TOPIC = "weather-updates";
+    private static final String TOPIC = "weather";
 
     public void sendWeatherEvent(WeatherEvent event) {
         try {
