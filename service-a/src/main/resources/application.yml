@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: weather-service-a
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+  liquibase:
+    enabled: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      repositories:
+        enabled: false
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: weather-consumer
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+server:
+  port: 8080
+
+grpc:
+  client:
+    weather-service-b:
+      host: ${GRPC_SERVICE_B_HOST:localhost}
+      port: ${GRPC_SERVICE_B_PORT:9090}
+
+logging:
+  level:
+    root: DEBUG
+    task1: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

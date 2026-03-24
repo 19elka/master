@@ -6,6 +6,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.reactive.function.client.WebClient;
 import task1.dto.weather.WeatherEvent;
 import task1.grpc.WeatherProto;
@@ -15,6 +16,7 @@ import task1.kafka.WeatherProducer;
 import java.time.Duration;
 
 @GrpcService
+@Profile("service-b")
 public class WeatherGrpcService extends WeatherServiceGrpc.WeatherServiceImplBase {
 
     private static final Logger log = LoggerFactory.getLogger(WeatherGrpcService.class);
@@ -33,7 +35,7 @@ public class WeatherGrpcService extends WeatherServiceGrpc.WeatherServiceImplBas
         String city = request.getCity();
 
         try {
-            String url = "https://yandex.ru/pogoda/ru/" + city.toLowerCase();
+            String url = "https://yandex.ru/pogoda/ru/" + city.toLowerCase(); //todo вынести в апликейшн ямал и использовать UriComponentsBuilder
             log.info("Requesting Yandex weather page: {}", url);
 
             String html = webClient.get()
