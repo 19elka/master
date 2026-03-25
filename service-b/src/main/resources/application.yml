@@ -1,15 +1,6 @@
 spring:
-  config:
-    activate:
-      on-profile: service-b
   application:
     name: weather-service-b
-
-  datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
 
   jpa:
     hibernate:
@@ -39,3 +30,8 @@ management:
   endpoint:
     health:
       show-details: always
+
+logging:
+  level:
+    root: INFO
+    task1: DEBUG

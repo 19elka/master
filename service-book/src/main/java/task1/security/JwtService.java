@@ -4,7 +4,6 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import task1.exception.InvalidTokenException;
 
@@ -13,7 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
-@Profile("book-service")
 public class JwtService {
     private final SecretKey key;
     private final long expiration;

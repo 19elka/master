@@ -1,6 +1,5 @@
 package task1.repository;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +11,6 @@ import task1.entity.Book;
 import java.util.UUID;
 
 @Repository
-@Profile("book-service")
 public interface BookRepository extends JpaRepository<Book, UUID> {
     @Query("""
             SELECT b FROM Book b

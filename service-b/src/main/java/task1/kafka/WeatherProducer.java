@@ -3,7 +3,6 @@ package task1.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import task1.dto.weather.WeatherEvent;
@@ -11,11 +10,10 @@ import task1.dto.weather.WeatherEvent;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@Profile("service-b")
 public class WeatherProducer {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     private static final String TOPIC = "weather";
 

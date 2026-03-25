@@ -3,7 +3,7 @@ package task1.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import task1.dto.weather.WeatherResponse;
@@ -13,16 +13,23 @@ import task1.grpc.WeatherServiceGrpc;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Profile("service-a")
 public class WeatherService {
 
-    private final WeatherServiceGrpc.WeatherServiceBlockingStub weatherStub;
-    private final RedisTemplate<Object, Object> redisTemplate;
+    @GrpcClient("weather-service-b")
+    private WeatherServiceGrpc.WeatherServiceBlockingStub weatherStub;
+    private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
     public WeatherResponse updateWeather(String city) {
+        if (city == null || city.trim().isEmpty()) {
+            log.warn("Invalid city name: {}", city);
+            return new WeatherResponse("invalid", 0.0, "error", System.currentTimeMillis());
+        }
+
+        city = city.trim();
         log.info("Updating weather for city: {}", city);
 
+        try {
         WeatherProto.WeatherRequest request = WeatherProto.WeatherRequest.newBuilder()
                 .setCity(city)
                 .build();
@@ -35,11 +42,21 @@ public class WeatherService {
                 protoResponse.getCondition(),
                 protoResponse.getTimestamp()
         );
+    } catch (Exception e) {
+            log.error("gRPC failed for {}, returning cached data", city, e);
+            return getWeather(city);
+        }
     }
 
     public WeatherResponse getWeather(String city) {
+        if (city == null || city.trim().isEmpty()) {
+            log.warn("Invalid city name: {}", city);
+            return new WeatherResponse("invalid", 0.0, "error", System.currentTimeMillis());
+        }
+
+        city = city.trim();
         String key = "weather:" + city;
-        String value = (String) redisTemplate.opsForValue().get(key);
+        String value = redisTemplate.opsForValue().get(key);
 
         if (value == null) {
             log.warn("Weather data not found in Redis for city: {}", city);

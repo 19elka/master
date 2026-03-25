@@ -1,28 +1,29 @@
-package task1.service;
+package task1.grpc;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.stub.StreamObserver;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import task1.dto.weather.WeatherEvent;
-import task1.grpc.WeatherProto;
-import task1.grpc.WeatherServiceGrpc;
 import task1.kafka.WeatherProducer;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @GrpcService
-@Profile("service-b")
 public class WeatherGrpcService extends WeatherServiceGrpc.WeatherServiceImplBase {
-
-    private static final Logger log = LoggerFactory.getLogger(WeatherGrpcService.class);
 
     private final WebClient webClient;
     private final WeatherProducer weatherProducer;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Map<String, CityCoordinates> coordinatesCache = new ConcurrentHashMap<>();
 
     public WeatherGrpcService(WeatherProducer weatherProducer, WebClient.Builder builder) {
         this.weatherProducer = weatherProducer;
@@ -33,63 +34,61 @@ public class WeatherGrpcService extends WeatherServiceGrpc.WeatherServiceImplBas
     public void getWeather(WeatherProto.WeatherRequest request,
                            StreamObserver<WeatherProto.WeatherResponse> responseObserver) {
         String city = request.getCity();
+        log.info("Received gRPC request for weather in: {}", city);
 
         try {
-            String url = "https://yandex.ru/pogoda/ru/" + city.toLowerCase(); //todo вынести в апликейшн ямал и использовать UriComponentsBuilder
-            log.info("Requesting Yandex weather page: {}", url);
+            CityCoordinates coordinates = getCityCoordinates(city);
+            log.debug("Coordinates for {}: lat={}, lon={}", city, coordinates.latitude(), coordinates.longitude());
 
-            String html = webClient.get()
-                    .uri(url)
+            String weatherUrl = UriComponentsBuilder.fromHttpUrl("https://api.open-meteo.com/v1/forecast")
+                    .queryParam("latitude", coordinates.latitude())
+                    .queryParam("longitude", coordinates.longitude())
+                    .queryParam("current_weather", "true")
+                    .queryParam("timezone", "auto")
+                    .build()
+                    .toUriString();
+
+            String weatherJson = webClient.get()
+                    .uri(weatherUrl)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block(Duration.ofSeconds(5));
 
-            if (html == null) {
-                throw new IllegalStateException("Empty HTML from Yandex");
+            if (weatherJson == null) {
+                throw new IllegalStateException("Empty JSON from Open-Meteo");
             }
 
-            Document doc = Jsoup.parse(html);
+            JsonNode root = objectMapper.readTree(weatherJson);
+            JsonNode current = root.path("current_weather");
 
-            String tempText = null;
-            if (doc.select(".temp__value").first() != null) {
-                tempText = doc.select(".temp__value").first().text();
-            } else if (doc.select("p.AppHourLyItem_main__HNbqX").first() != null) {
-                tempText = doc.select("p.AppHourLyItem_main__HNbqX").first().text();
-            } else {
-                throw new IllegalStateException("Temperature element not found");
+            if (current.isMissingNode()) {
+                throw new IllegalStateException("No current_weather data in response");
             }
 
-            double temperature = Double.parseDouble(
-                    tempText.replace("+", "").replace("−", "-").trim()
-            );
+            double temperature = current.path("temperature").asDouble(0.0);
+            int weatherCode = current.path("weathercode").asInt(-1);
+            String condition = mapWeatherCode(weatherCode);
+            long timestamp = System.currentTimeMillis();
 
-            String condition = null;
-            if (doc.select(".link__condition").first() != null) {
-                condition = doc.select(".link__condition").first().text();
-            } else if (doc.select(".fact__condition").first() != null) {
-                condition = doc.select(".fact__condition").first().text();
-            } else {
-                condition = "unknown";
-            }
+            log.info("Parsed Open-Meteo weather for {}: {}°C, code={}, condition={}",
+                    city, temperature, weatherCode, condition);
 
-            long ts = System.currentTimeMillis();
-
-            log.info("Parsed weather for {}: {}°C, {}", city, temperature, condition);
-
-            WeatherEvent event = new WeatherEvent(city, temperature, condition, ts);
+            WeatherEvent event = new WeatherEvent(city, temperature, condition, timestamp);
             weatherProducer.sendWeatherEvent(event);
 
             WeatherProto.WeatherResponse response = WeatherProto.WeatherResponse.newBuilder()
                     .setCity(city)
                     .setTemperature(temperature)
                     .setCondition(condition)
-                    .setTimestamp(ts)
+                    .setTimestamp(timestamp)
                     .build();
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            log.info("Successfully processed weather for {}", city);
+
         } catch (Exception e) {
-            log.error("Failed to get/parse weather for {} from Yandex: {}", city, e.getMessage());
+            log.error("Failed to get/parse weather for {} from Open-Meteo: {}", city, e.getMessage());
 
             WeatherProto.WeatherResponse fallback = WeatherProto.WeatherResponse.newBuilder()
                     .setCity(city)
@@ -101,5 +100,72 @@ public class WeatherGrpcService extends WeatherServiceGrpc.WeatherServiceImplBas
             responseObserver.onNext(fallback);
             responseObserver.onCompleted();
         }
+    }
+
+    private CityCoordinates getCityCoordinates(String city) throws Exception {
+        String key = city.toLowerCase();
+
+        if (coordinatesCache.containsKey(key)) {
+            log.debug("Using cached coordinates for: {}", city);
+            return coordinatesCache.get(key);
+        }
+
+        String geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name="
+                + URLEncoder.encode(city, StandardCharsets.UTF_8)
+                + "&count=1&format=json";
+
+        String geoJson = webClient.get()
+                .uri(geoUrl)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block(Duration.ofSeconds(5));
+
+        if (geoJson == null || geoJson.isBlank()) {
+            throw new IllegalStateException("Empty response from Geocoding API");
+        }
+
+        JsonNode root = objectMapper.readTree(geoJson);
+        JsonNode results = root.path("results");
+
+        if (results.isEmpty() || results.isMissingNode()) {
+            throw new IllegalStateException("City not found: " + city);
+        }
+
+        JsonNode first = results.get(0);
+        double latitude = first.path("latitude").asDouble();
+        double longitude = first.path("longitude").asDouble();
+
+        if (latitude == 0.0 && longitude == 0.0) {
+            throw new IllegalStateException("Invalid coordinates for city: " + city);
+        }
+
+        CityCoordinates coordinates = new CityCoordinates(latitude, longitude);
+        coordinatesCache.put(key, coordinates);
+
+        log.info("Resolved coordinates for {}: lat={}, lon={}", city, latitude, longitude);
+        return coordinates;
+    }
+
+    private String mapWeatherCode(int code) {
+        return switch (code) {
+            case 0 -> "clear";
+            case 1, 2 -> "partly_cloudy";
+            case 3 -> "cloudy";
+            case 45, 48 -> "fog";
+            case 51, 53, 55 -> "drizzle";
+            case 56, 57 -> "freezing_drizzle";
+            case 61, 63, 65 -> "rain";
+            case 66, 67 -> "freezing_rain";
+            case 71, 73, 75 -> "snow";
+            case 77 -> "snow_grains";
+            case 80, 81, 82 -> "rain_showers";
+            case 85, 86 -> "snow_showers";
+            case 95 -> "thunderstorm";
+            case 96, 99 -> "thunderstorm_with_hail";
+            default -> "unknown";
+        };
+    }
+
+    private record CityCoordinates(double latitude, double longitude) {
     }
 }

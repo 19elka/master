@@ -30,8 +30,8 @@ server:
 grpc:
   client:
     weather-service-b:
-      host: ${GRPC_SERVICE_B_HOST:localhost}
-      port: ${GRPC_SERVICE_B_PORT:9090}
+      address: static://${GRPC_SERVICE_B_HOST:localhost}:${GRPC_SERVICE_B_PORT:9090}
+      negotiation-type: plaintext
 
 logging:
   level:

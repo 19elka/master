@@ -2,7 +2,6 @@ package task1.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -10,12 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import task1.dto.book.BookCreateDto;
 import task1.dto.book.BookResponseDto;
 import task1.dto.book.BookUpdateDto;
-import task1.repository.AuthorRepository;
-import task1.generator.BookDataGenerator;
-import task1.mapper.BookMapper;
-import task1.repository.BookRepository;
 import task1.entity.Author;
 import task1.entity.Book;
+import task1.generator.BookDataGenerator;
+import task1.mapper.BookMapper;
+import task1.repository.AuthorRepository;
+import task1.repository.BookRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +23,6 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Profile("book-service")
 public class BookService {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;

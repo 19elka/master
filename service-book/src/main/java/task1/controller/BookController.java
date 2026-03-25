@@ -11,13 +11,12 @@ package task1.controller;
 6 посмотреть мок собес и подготовить вопросы по его содержанию
 к 26.03.2026
 1 разделить проект: из монолитной к модульной (сервис-ориентированной) архит-ре. Использовать java 9 modules or maven/gradle modules.
-проект в Идея должен состоять из модулей, которые билдятся в 3 отдельных джарника
+Проект в IDEA должен состоять из модулей, которые билдятся в 3 отдельных джарника
  */
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -43,7 +42,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/books")
 @RequiredArgsConstructor
-@Profile("book-service")
 public class BookController {
     private final BookService bookService;
 

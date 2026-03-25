@@ -3,6 +3,10 @@ plugins {
     id("com.google.protobuf")
 }
 
+springBoot {
+    mainClass.set("task1.ServiceAApplication")
+}
+
 dependencies {
     implementation(project(":common"))
 
