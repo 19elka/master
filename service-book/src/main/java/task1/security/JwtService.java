@@ -1,0 +1,47 @@
+package task1.security;
+
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import task1.exception.InvalidTokenException;
+
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+
+@Component
+public class JwtService {
+    private final SecretKey key;
+    private final long expiration;
+
+    public JwtService(
+            @Value("${app.jwt.secret}") String secret,
+            @Value("${app.jwt.expiration}") long expiration) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.expiration = expiration;
+    }
+
+    public String generateToken(String username) {
+        return Jwts.builder()
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(key)
+                .compact();
+    }
+
+    public String validateTokenAndGetUsername(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getSubject();
+        } catch (JwtException e) {
+           throw new InvalidTokenException("Invalid token");
+        }
+    }
+}

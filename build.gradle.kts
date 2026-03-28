@@ -1,47 +1,36 @@
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.JavaVersion
+
 plugins {
-    java
-    id("org.springframework.boot") version "3.3.0"
-    id("io.spring.dependency-management") version "1.1.4"
+    id("org.springframework.boot") version "3.3.0" apply false
+    id("io.spring.dependency-management") version "1.1.4" apply false
+    id("com.google.protobuf") version "0.9.4" apply false
 }
 
-repositories {
-    mavenCentral()
+allprojects {
+    group = "com.example"
+    version = "1.0.0"
+
+    repositories {
+        mavenCentral()
+    }
 }
 
-dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-hateoas")
-    implementation("org.springframework.data:spring-data-commons")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-security")
+subprojects {
+    apply(plugin = "java")
+    apply(plugin = "io.spring.dependency-management")
 
-    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+    configure<JavaPluginExtension> {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 
-    implementation("org.liquibase:liquibase-core")
-    implementation("redis.clients:jedis:4.3.2")
-    runtimeOnly("org.postgresql:postgresql")
+    dependencies {
+        add("compileOnly", "org.projectlombok:lombok:1.18.26")
+        add("annotationProcessor", "org.projectlombok:lombok:1.18.26")
+    }
 
-    implementation("org.springframework.boot:spring-boot-starter-actuator:3.3.0")
-    implementation("net.datafaker:datafaker:2.1.0")
-
-    implementation("org.springframework.kafka:spring-kafka")
-
-    compileOnly("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
-
-    implementation("org.mapstruct:mapstruct:1.5.5.Final")
-    annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
-
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-    testImplementation("org.assertj:assertj-core:3.24.2")
-}
-
-tasks.test {
-    useJUnitPlatform()
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
 }

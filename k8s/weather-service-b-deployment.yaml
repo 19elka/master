@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-service-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-service-b
+  template:
+    metadata:
+      labels:
+        app: weather-service-b
+    spec:
+      containers:
+        - name: weather-service-b
+          image: service-b:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+            - containerPort: 9090
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "service-b"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "host.minikube.internal:29092"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 90
+            periodSeconds: 5
+            timeoutSeconds: 3
