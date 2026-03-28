@@ -35,8 +35,8 @@ grpc:
 
 logging:
   level:
-    root: DEBUG
-    task1: DEBUG
+    root: INFO
+    task1: INFO
 
 management:
   endpoints:

@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: weather-service-b
-          image: weather-app:1.0
+          image: service-b:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
             - containerPort: 9090

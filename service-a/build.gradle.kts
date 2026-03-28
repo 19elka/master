@@ -22,8 +22,6 @@ dependencies {
     implementation("redis.clients:jedis:4.3.2")
     implementation("net.devh:grpc-client-spring-boot-starter:2.15.0.RELEASE")
 
-    compileOnly("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 }
 

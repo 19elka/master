@@ -5,10 +5,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import task1.dto.weather.WeatherResponse;
 import task1.grpc.WeatherProto;
 import task1.grpc.WeatherServiceGrpc;
+
+import java.time.Instant;
 
 @Slf4j
 @Service
@@ -20,38 +23,32 @@ public class WeatherService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
-    public WeatherResponse updateWeather(String city) {
+    @Async
+    public void updateWeatherAsync(String city) {
         if (city == null || city.trim().isEmpty()) {
             log.warn("Invalid city name: {}", city);
-            return new WeatherResponse("invalid", 0.0, "error", System.currentTimeMillis());
+            return;
         }
 
         city = city.trim();
         log.info("Updating weather for city: {}", city);
 
         try {
-        WeatherProto.WeatherRequest request = WeatherProto.WeatherRequest.newBuilder()
-                .setCity(city)
-                .build();
+            WeatherProto.WeatherRequest request = WeatherProto.WeatherRequest.newBuilder()
+                    .setCity(city)
+                    .build();
 
-        WeatherProto.WeatherResponse protoResponse = weatherStub.getWeather(request);
-
-        return new WeatherResponse(
-                protoResponse.getCity(),
-                protoResponse.getTemperature(),
-                protoResponse.getCondition(),
-                protoResponse.getTimestamp()
-        );
-    } catch (Exception e) {
+            weatherStub.getWeather(request);
+            log.info("gRPC weather update triggered for {}", city);
+        } catch (Exception e) {
             log.error("gRPC failed for {}, returning cached data", city, e);
-            return getWeather(city);
         }
     }
 
     public WeatherResponse getWeather(String city) {
         if (city == null || city.trim().isEmpty()) {
             log.warn("Invalid city name: {}", city);
-            return new WeatherResponse("invalid", 0.0, "error", System.currentTimeMillis());
+            return new WeatherResponse("invalid", 0.0, "error", Instant.now());
         }
 
         city = city.trim();
@@ -60,7 +57,7 @@ public class WeatherService {
 
         if (value == null) {
             log.warn("Weather data not found in Redis for city: {}", city);
-            return new WeatherResponse(city, 0.0, "not_found", System.currentTimeMillis());
+            return new WeatherResponse(city, 0.0, "not_found", Instant.now());
         }
 
         try {
@@ -69,7 +66,7 @@ public class WeatherService {
             return response;
         } catch (Exception e) {
             log.error("Failed to parse weather from Redis: {}", e.getMessage());
-            return new WeatherResponse(city, 0.0, "error", System.currentTimeMillis());
+            return new WeatherResponse(city, 0.0, "error", Instant.now());
         }
     }
 }

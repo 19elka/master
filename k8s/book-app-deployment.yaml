@@ -16,13 +16,15 @@ spec:
     spec:
       containers:
         - name: book-app
-          image: book-service:1.0
+          image: service-book:1.0
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8080
+            - containerPort: 8082
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "k8s,book-service"
+            - name: DB_HOST
+              value: "host.minikube.internal"
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
@@ -34,17 +36,14 @@ spec:
                   name: app-secret
                   key: password
             - name: JWT_SECRET
-              value: "mySuperSecretKeyForJwtTokensThatIsVeryLongAndSecure1234567890!"
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: jwt-secret
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "host.minikube.internal:29092"
             - name: SPRING_KAFKA_CONSUMER_GROUP_ID
               value: "book-service-users"
-            - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://host.docker.internal:5432/booksdb"
-            - name: SPRING_DATASOURCE_USERNAME
-              value: "postgres"
-            - name: SPRING_DATASOURCE_PASSWORD
-              value: "postgres"
           resources:
             requests:
               memory: "512Mi"
@@ -55,7 +54,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
-              port: 8080
+              port: 8082
             initialDelaySeconds: 120
             periodSeconds: 15
             timeoutSeconds: 2
@@ -63,7 +62,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 8080
+              port: 8082
             initialDelaySeconds: 90
             periodSeconds: 10
             timeoutSeconds: 2

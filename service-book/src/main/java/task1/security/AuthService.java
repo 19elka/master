@@ -9,10 +9,13 @@ import task1.dto.auth.LoginRequest;
 import task1.dto.auth.LoginResponse;
 import task1.dto.auth.UserCreateDto;
 import task1.dto.auth.UserResponseDto;
+import task1.entity.Roles;
 import task1.entity.User;
+import task1.exception.ServerErrorException;
 import task1.repository.UserRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,16 +33,18 @@ public class AuthService {
             throw new RuntimeException("Username already exists");
         }
 
-        User user = User.builder() //билдер
+        User user = User.builder()
                 .username(dto.username())
                 .password(passwordEncoder.encode(dto.password()))
                 .name(dto.name())
-                .roles(List.of("USER"))
+                .roles(List.of(Roles.USER))
                 .build();
 
         userRepository.save(user);
 
-        String roles = String.join(",", user.getRoles());
+        String roles = user.getRoles().stream()
+                .map(Enum::name)
+                .collect(Collectors.joining(","));
 
         return new UserResponseDto(
                 user.getId(),
@@ -52,7 +57,7 @@ public class AuthService {
     @Transactional
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ServerErrorException("User not found"));
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new RuntimeException("Invalid password");
@@ -60,7 +65,9 @@ public class AuthService {
 
         String token = jwtService.generateToken(user.getUsername());
 
-        String roles = String.join(",", user.getRoles());
+        String roles = user.getRoles().stream()
+                .map(Enum::name)
+                .collect(Collectors.joining(","));
 
         return new LoginResponse(token, "Bearer", user.getUsername(), roles);
     }

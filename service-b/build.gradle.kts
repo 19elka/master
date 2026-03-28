@@ -13,7 +13,4 @@ dependencies {
     implementation("org.jsoup:jsoup:1.17.2")
     implementation("io.github.resilience4j:resilience4j-spring-boot3:2.2.0")
     implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
-
-    compileOnly("org.projectlombok:lombok:1.18.26")
-    annotationProcessor("org.projectlombok:lombok:1.18.26")
 }

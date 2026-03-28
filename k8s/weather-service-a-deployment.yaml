@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: weather-service-a
-          image: weather-app:1.0
+          image: service-a:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:

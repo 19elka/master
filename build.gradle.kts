@@ -25,6 +25,11 @@ subprojects {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    dependencies {
+        add("compileOnly", "org.projectlombok:lombok:1.18.26")
+        add("annotationProcessor", "org.projectlombok:lombok:1.18.26")
+    }
+
     tasks.withType<Test> {
         useJUnitPlatform()
     }

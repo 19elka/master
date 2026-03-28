@@ -1,6 +1,7 @@
 package task1.entity;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,8 +12,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +37,9 @@ public class User {
     private String password;
 
     @Builder.Default
-    @JdbcTypeCode(SqlTypes.JSON)
+    @Convert(converter = RolesListConverter.class)
     @Column(columnDefinition = "jsonb", nullable = false)
-    private List<String> roles = new ArrayList<>();
+    private List<Roles> roles = new ArrayList<>();
 
     @Column
     private String name;

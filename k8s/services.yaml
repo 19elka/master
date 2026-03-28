@@ -20,6 +20,9 @@ spec:
   selector:
     app: weather-service-b
   ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
     - name: grpc
       port: 9090
       targetPort: 9090
@@ -32,9 +35,9 @@ metadata:
   name: book-service
 spec:
   selector:
-    app: book-service
+    app: book-app
   ports:
-    - port: 8080
-      targetPort: 8080
+    - port: 8082
+      targetPort: 8082
       nodePort: 30081
   type: NodePort

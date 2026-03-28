@@ -18,8 +18,9 @@ public class WeatherController {
     private final WeatherService weatherService;
 
     @PostMapping("/update/{city}")
-    public WeatherResponse updateWeather(@PathVariable String city) {
-        return weatherService.updateWeather(city);
+    public String updateWeather(@PathVariable String city) {
+        weatherService.updateWeatherAsync(city);
+        return "Weather update started for " + city;
     }
 
     @GetMapping("/get/{city}")

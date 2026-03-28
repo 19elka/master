@@ -7,24 +7,18 @@ echo "========================================="
 
 echo ""
 echo "Building service-a..."
-cd service-a
-./gradlew clean bootJar
-docker build -t service-a:latest .
-cd ..
+./gradlew :service-a:clean :service-a:bootJar
+docker build -f service-a/Dockerfile -t service-a:latest .
 
 echo ""
 echo "Building service-b..."
-cd service-b
-./gradlew clean bootJar
-docker build -t service-b:latest .
-cd ..
+./gradlew :service-b:clean :service-b:bootJar
+docker build -f service-b/Dockerfile -t service-b:latest .
 
 echo ""
 echo "Building book-service..."
-cd book-service
-./gradlew clean bootJar
-docker build -t book-service:1.0 .
-cd ..
+./gradlew :service-book:clean :service-book:bootJar
+docker build -f service-book/Dockerfile -t book-service:1.0 .
 
 echo ""
 echo "========================================="

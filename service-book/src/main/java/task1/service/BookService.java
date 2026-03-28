@@ -11,6 +11,7 @@ import task1.dto.book.BookResponseDto;
 import task1.dto.book.BookUpdateDto;
 import task1.entity.Author;
 import task1.entity.Book;
+import task1.exception.ServerErrorException;
 import task1.generator.BookDataGenerator;
 import task1.mapper.BookMapper;
 import task1.repository.AuthorRepository;
@@ -33,7 +34,7 @@ public class BookService {
     public BookResponseDto createBook(BookCreateDto dto) {
         Book book = BookMapper.toEntity(dto);
         Author author = authorRepository.findById(dto.authorId())
-                .orElseThrow(() -> new RuntimeException("Author not found"));
+                .orElseThrow(() -> new ServerErrorException("Author not found"));
         book.setAuthor(author);
         Book savedBook = bookRepository.save(book);
         log.info("Book created with id: {}", savedBook.getId());
@@ -70,7 +71,7 @@ public class BookService {
 
         if (dto.authorId() != null) {
             Author author = authorRepository.findById(dto.authorId())
-                    .orElseThrow(() -> new RuntimeException("Author not found"));
+                    .orElseThrow(() -> new ServerErrorException("Author not found"));
             book.setAuthor(author);
         }
 //        b.deleteBook(UUID.randomUUID()); //Self-Injection
