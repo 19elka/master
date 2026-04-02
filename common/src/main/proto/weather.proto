@@ -15,6 +15,13 @@ message WeatherResponse {
   int64 timestamp = 4;
 }
 
+message WeatherStatusResponse {
+  string city = 1;
+  string status = 2;
+}
+
 service WeatherService {
   rpc GetWeather(WeatherRequest) returns (WeatherResponse);
+
+  rpc StartWeatherUpdate(WeatherRequest) returns (WeatherStatusResponse);
 }

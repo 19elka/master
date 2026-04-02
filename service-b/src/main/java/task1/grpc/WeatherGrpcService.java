@@ -20,6 +20,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Slf4j
 @GrpcService
@@ -43,24 +45,20 @@ public class WeatherGrpcService extends WeatherServiceGrpc.WeatherServiceImplBas
     @Value("${weather.api.temperature-unit}")
     private String temperatureUnit;
 
+    private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+
     public WeatherGrpcService(WeatherProducer weatherProducer, WebClient.Builder builder, WeatherCodeProperties weatherCodeProperties) {
         this.weatherProducer = weatherProducer;
         this.webClient = builder.build();
         this.weatherCodeProperties = weatherCodeProperties;
     }
 
-
-    @Override
-    public void getWeather(WeatherProto.WeatherRequest request,
-                           StreamObserver<WeatherProto.WeatherResponse> responseObserver) { //1
-        String city = request.getCity();
-        log.info("Received gRPC request for weather in: {}", city);
-
+    private void processWeatherUpdate(String city) {
         try {
-            CityCoordinates coordinates = getCityCoordinates(city); //2
+            CityCoordinates coordinates = getCityCoordinates(city);
             log.debug("Coordinates for {}: lat={}, lon={}", city, coordinates.latitude(), coordinates.longitude());
 
-            String weatherUrl = UriComponentsBuilder.fromHttpUrl(forecastBaseUrl)  //3
+            String weatherUrl = UriComponentsBuilder.fromHttpUrl(forecastBaseUrl)
                     .queryParam("latitude", coordinates.latitude())
                     .queryParam("longitude", coordinates.longitude())
                     .queryParam("current_weather", "true")
@@ -69,13 +67,13 @@ public class WeatherGrpcService extends WeatherServiceGrpc.WeatherServiceImplBas
                     .build()
                     .toUriString();
 
-            String weatherJson = webClient.get() //4
+            String weatherJson = webClient.get()
                     .uri(weatherUrl)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block(Duration.ofSeconds(5));
 
-            if (weatherJson == null || weatherJson.isBlank()) { //5
+            if (weatherJson == null || weatherJson.isBlank()) {
                 throw new IllegalStateException("Empty JSON from Open-Meteo");
             }
 
@@ -94,35 +92,41 @@ public class WeatherGrpcService extends WeatherServiceGrpc.WeatherServiceImplBas
             Instant timestamp = Instant.now();
 
             log.info("Parsed Open-Meteo weather for {}: {}°C, code={}, condition={}",
-                    city, temperature, weatherCode, condition); //7
+                    city, temperature, weatherCode, condition);
 
             WeatherEvent event = new WeatherEvent(city, temperature, condition, timestamp);
             weatherProducer.sendWeatherEvent(event);
-
-            WeatherProto.WeatherResponse response = WeatherProto.WeatherResponse.newBuilder() //8
-                    .setCity(city)
-                    .setTemperature(temperature)
-                    .setCondition(condition)
-                    .setTimestamp(timestamp.toEpochMilli())
-                    .build();
-
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
-            log.info("Successfully processed weather for {}", city);
-
         } catch (Exception e) {
             log.error("Failed to get/parse weather for {} from Open-Meteo: {}", city, e.getMessage());
-            Instant now = Instant.now();
-            WeatherProto.WeatherResponse fallback = WeatherProto.WeatherResponse.newBuilder()
-                    .setCity(city)
-                    .setTemperature(0.0)
-                    .setCondition("unavailable")
-                    .setTimestamp(now.toEpochMilli())
-                    .build();
-
-            responseObserver.onNext(fallback);
-            responseObserver.onCompleted();
         }
+    }
+
+    @Override
+    public void startWeatherUpdate(WeatherProto.WeatherRequest request,
+                                   StreamObserver<WeatherProto.WeatherStatusResponse> responseObserver) {
+        String city = request.getCity();
+        log.info("Received StartWeatherUpdate request for city: {}", city);
+
+        executorService.submit(() -> processWeatherUpdate(city));
+
+        WeatherProto.WeatherStatusResponse response =
+                WeatherProto.WeatherStatusResponse.newBuilder()
+                        .setCity(city)
+                        .setStatus("STARTED")
+                        .build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getWeather(WeatherProto.WeatherRequest request,
+                           StreamObserver<WeatherProto.WeatherResponse> responseObserver) {
+        responseObserver.onError(
+                io.grpc.Status.UNIMPLEMENTED
+                        .withDescription("Use StartWeatherUpdate instead")
+                        .asRuntimeException()
+        );
     }
 
     private CityCoordinates getCityCoordinates(String city) throws Exception {

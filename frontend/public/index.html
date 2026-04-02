@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h1>Weather Dashboard</h1>
+
+    <div class="city-input-group">
+        <input type="text" id="cityInput" placeholder="Enter city name" value="Moscow">
+        <div class="button-group">
+            <button id="updateBtn" class="btn btn-update">Update Weather</button>
+            <button id="getBtn" class="btn btn-get">Get Weather</button>
+        </div>
+    </div>
+
+    <div class="weather-display" id="weatherDisplay">
+        <div class="weather-card">
+            <div class="weather-loading">Enter a city and click Get Weather</div>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

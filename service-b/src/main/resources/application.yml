@@ -2,6 +2,11 @@ spring:
   application:
     name: weather-service-b
 
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,7 +18,7 @@ spring:
     enabled: false
 
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: host.minikube.internal:29092
 
 server:
   port: 8081
@@ -34,7 +39,7 @@ management:
 logging:
   level:
     root: INFO
-    task1: DEBUG
+    task1: INFO
 
 weather:
   api:

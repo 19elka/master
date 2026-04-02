@@ -40,7 +40,7 @@ spec:
                 secretKeyRef:
                   name: app-secret
                   key: jwt-secret
-            - name: KAFKA_BOOTSTRAP_SERVERS
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "host.minikube.internal:29092"
             - name: SPRING_KAFKA_CONSUMER_GROUP_ID
               value: "book-service-users"

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: weather-service-b
-          image: service-b:latest
+          image: weather-service-b:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
@@ -22,7 +22,7 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "service-b"
-            - name: KAFKA_BOOTSTRAP_SERVERS
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "host.minikube.internal:29092"
           resources:
             requests:
