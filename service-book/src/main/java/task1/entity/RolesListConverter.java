@@ -17,7 +17,7 @@ public class RolesListConverter implements AttributeConverter<List<Roles>, Strin
     @Override
     public String convertToDatabaseColumn(List<Roles> attribute) {
         try {
-            if (attribute == null) {
+            if (attribute == null) {  //
                 return "[]";
             }
             return mapper.writeValueAsString(attribute);

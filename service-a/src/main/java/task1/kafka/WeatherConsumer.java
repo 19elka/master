@@ -16,7 +16,7 @@ public class WeatherConsumer {
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, String> redisTemplate;
 
-    @KafkaListener(topics = "weather", groupId = "weather-consumer")
+    @KafkaListener(topics = "weather", groupId = "weather-consumer", containerFactory = "weatherKafkaListenerContainerFactory")
     public void consumerWeatherEvent(String message) {
         try {
             log.info("Received weather event from Kafka: {}", message);

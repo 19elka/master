@@ -3,6 +3,7 @@ package task1.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import task1.dto.weather.WeatherEvent;
@@ -12,6 +13,7 @@ import task1.dto.weather.WeatherEvent;
 @RequiredArgsConstructor
 public class WeatherProducer {
 
+    @Qualifier("weatherKafkaTemplate")
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 

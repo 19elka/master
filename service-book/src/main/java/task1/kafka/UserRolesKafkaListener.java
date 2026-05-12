@@ -8,8 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserRolesKafkaListener {
 
-    @KafkaListener(topics = "user-roles",
-            containerFactory = "userRolesKafkaListenerContainerFactory")
+    @KafkaListener(topics = "user-roles", groupId = "book-service-users", containerFactory = "bookKafkaListenerContainerFactory")
     public void onMessage(String message) {
         log.info("Received message from Kafka [user-roles]: {}", message);
     }
