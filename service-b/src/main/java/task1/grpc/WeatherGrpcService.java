@@ -112,7 +112,7 @@ public class WeatherGrpcService extends WeatherServiceGrpc.WeatherServiceImplBas
         WeatherProto.WeatherStatusResponse response =
                 WeatherProto.WeatherStatusResponse.newBuilder()
                         .setCity(city)
-                        .setStatus("STARTED")
+                        .setStatus("STARTED") //
                         .build();
 
         responseObserver.onNext(response);
