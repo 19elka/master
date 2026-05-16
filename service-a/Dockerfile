@@ -8,6 +8,7 @@ COPY gradle ./gradle
 COPY common ./common
 COPY service-a ./service-a
 
+RUN sed -i 's/\r$//' gradlew
 RUN chmod +x gradlew
 RUN ./gradlew :service-a:dependencies --no-daemon
 RUN ./gradlew :service-a:bootJar --no-daemon

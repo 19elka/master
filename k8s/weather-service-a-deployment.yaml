@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: weather-service-a
-          image: service-a:latest
+          image: service-a:v23
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -29,3 +29,19 @@ spec:
               value: weather-service-b.default.svc.cluster.local
             - name: GRPC_SERVICE_B_PORT
               value: "9090"
+            - name: MINIO_URL
+              value: "http://minio-service:9000"
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                   name: minio-secret
+                   key: access-key
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                    name: minio-secret
+                    key: secret-key
+            - name: MINIO_BUCKET
+              value: "pdf-documents"
+            - name: MINIO_REGION
+              value: "us-east-1"

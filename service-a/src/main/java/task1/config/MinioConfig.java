@@ -1,0 +1,30 @@
+package task1.config;
+
+import io.minio.MinioClient;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@EnableConfigurationProperties(MinioConfig.MinioProperties.class)
+public class MinioConfig {
+
+    @Bean
+    public MinioClient minioClient(MinioProperties properties) {
+        return MinioClient.builder()
+                .endpoint(properties.url())
+                .credentials(properties.accessKey(), properties.secretKey())
+                .region(properties.region())
+                .build();
+    }
+
+    @ConfigurationProperties(prefix = "minio")
+    public record MinioProperties(
+            String url,
+            String accessKey,
+            String secretKey,
+            String bucket,
+            String region
+    ) {}
+}
