@@ -21,6 +21,8 @@ dependencies {
     implementation("io.github.resilience4j:resilience4j-reactor:2.2.0")
     implementation("redis.clients:jedis:4.3.2")
     implementation("net.devh:grpc-client-spring-boot-starter:2.15.0.RELEASE")
+    implementation("io.minio:minio:8.5.7")
+    implementation("org.springframework.boot:spring-boot-configuration-processor")
 
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 }

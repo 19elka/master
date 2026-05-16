@@ -36,6 +36,7 @@ data:
   default.conf: |
     server {
         listen 80;
+        client_max_body_size 50M;
         location / {
             proxy_pass http://weather-frontend:3000;
             proxy_set_header Host $host;

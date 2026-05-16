@@ -21,6 +21,15 @@ spring:
     bootstrap-servers: host.minikube.internal:29092
     consumer:
       group-id: weather-consumer
+      properties:
+        allow.auto.create.topics: true
+    producer:
+      properties:
+        allow.auto.create.topics: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
 
 server:
   port: 8080
@@ -42,3 +51,10 @@ management:
     web:
       exposure:
         include: health,info
+
+minio:
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket: ${MINIO_BUCKET:pdf-documents}
+  region: ${MINIO_REGION:us-east-1}

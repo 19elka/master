@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: weather-service-b
-          image: weather-service-b:v1
+          image: weather-service-b:v23
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
